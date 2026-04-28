@@ -125,6 +125,12 @@ jobs:
         FM_TestConnectionStrings__SqlServer2016__ContainerEnabled: ${{ matrix.os == 'ubuntu-latest' }}
         FM_TestConnectionStrings__SqlServer2016__IsEnabled: ${{ matrix.os == 'ubuntu-latest' }}
 
+    - name: Verify test results coverage files exists
+      if: matrix.os == 'ubuntu-latest' && (!cancelled())
+      run: |
+        echo "=== Coverage directory listing ==="
+        ls -lar "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**" || true
+
     - name: Combine Coverage Reports
       uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.0
       if: '!cancelled()'
