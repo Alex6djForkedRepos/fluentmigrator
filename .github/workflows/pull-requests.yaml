@@ -112,6 +112,7 @@ jobs:
         }
         # Cleanup
         if (Test-Path $installerPath) { Remove-Item $installerPath -Force -ErrorAction SilentlyContinue }
+
     - name: Restore, Build, Test
       run: dotnet test --framework ${{ matrix.dotnet-tfm }} --configuration ${{ env.buildConfiguration }} --verbosity quiet --logger trx --collect:"XPlat Code Coverage" --results-directory "TestResults-${{ matrix.dotnet-tfm }}"
       env:
@@ -133,13 +134,13 @@ jobs:
         echo "=== Environment variable GITHUB_WORKSPACE ==="
         echo $GITHUB_WORKSPACE
         echo "=== Coverage directory listing ==="
-        ls -larR "${{ github.workspace }}/**/Cobertura.xml" || true
+        ls -larR "${{ github.workspace }}/**/*Cobertura.xml" || true
 
     - name: Combine Coverage Reports
       uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.7
       if: '!cancelled()'
       with:
-        reports: "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/Cobertura.xml"
+        reports: "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/*Cobertura.xml"
         targetdir: "${{ github.workspace }}/coverage"
         reporttypes: "Cobertura"
         verbosity: "Info"
