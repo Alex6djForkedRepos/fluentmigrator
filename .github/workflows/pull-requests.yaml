@@ -129,7 +129,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && (!cancelled())
       run: |
         echo "=== Coverage directory listing ==="
-        ls -lar "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**" || true
+        ls -larR "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/Cobertura.xml" || true
 
     - name: Combine Coverage Reports
       uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.0
