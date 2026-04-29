@@ -128,17 +128,20 @@ jobs:
     - name: Verify test results coverage files exists
       if: matrix.os == 'ubuntu-latest' && (!cancelled())
       run: |
+        echo "=== Runner variable github.workspace ==="
+        echo "${{ github.workspace }}"
+        echo "=== Environment variable GITHUB_WORKSPACE ==="
+        echo $GITHUB_WORKSPACE
         echo "=== Coverage directory listing ==="
-        ls -larR "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/Cobertura.xml" || true
+        ls -larR "${{ github.workspace }}/**/Cobertura.xml" || true
 
     - name: Combine Coverage Reports
-      uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.0
+      uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.7
       if: '!cancelled()'
       with:
-        reports: "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/coverage.cobertura.xml"
+        reports: "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/Cobertura.xml"
         targetdir: "${{ github.workspace }}/coverage"
         reporttypes: "Cobertura"
-        reportfile: "Cobertura.xml"
         verbosity: "Info"
         title: "Code Coverage"
         tag: "${{ github.run_number }}_${{ github.run_id }}"
