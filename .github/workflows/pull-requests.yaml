@@ -134,14 +134,14 @@ jobs:
         echo "=== Environment variable GITHUB_WORKSPACE ==="
         echo $GITHUB_WORKSPACE
         echo "=== Coverage directory listing ==="
-        ls -larR "${{ github.workspace }}/**/*Cobertura.xml" || true
+        find . -name "*Cobertura.xml" || true
 
     - name: Combine Coverage Reports
       uses: danielpalme/ReportGenerator-GitHub-Action@v5.5.7
       if: '!cancelled()'
       with:
-        reports: "${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/*Cobertura.xml"
-        targetdir: "${{ github.workspace }}/coverage"
+        reports: "$GITHUB_WORKSPACE/**/TestResults-${{ matrix.dotnet-tfm }}/**/*Cobertura.xml"
+        targetdir: "$GITHUB_WORKSPACE/coverage"
         reporttypes: "Cobertura"
         verbosity: "Info"
         title: "Code Coverage"
@@ -152,22 +152,22 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && (!cancelled())
       run: |
         echo "=== Coverage directory listing ==="
-        ls -la "${{ github.workspace }}/coverage/" || true
-        test -f "${{ github.workspace }}/coverage/Cobertura.xml"
+        ls -la "$GITHUB_WORKSPACE/coverage/" || true
+        test -f "$GITHUB_WORKSPACE/coverage/Cobertura.xml"
 
     - name: Upload Combined Coverage XML
       uses: actions/upload-artifact@v4
       if: '!cancelled()'
       with:
         name: coverage-${{ matrix.os }}-${{ matrix.dotnet-tfm }}
-        path: ${{ github.workspace }}/coverage/Cobertura.xml
+        path: $GITHUB_WORKSPACE/coverage/Cobertura.xml
         retention-days: 5
 
     - name: Publish Code Coverage Report
       uses: irongut/CodeCoverageSummary@v1.3.0
       if: matrix.os == 'ubuntu-latest' && (!cancelled())
       with:
-        filename: "${{ github.workspace }}/coverage/Cobertura.xml"
+        filename: "$GITHUB_WORKSPACE/coverage/Cobertura.xml"
         badge: true
         fail_below_min: false
         format: markdown
@@ -182,14 +182,14 @@ jobs:
       if: github.event_name == 'pull_request'
       with:
         recreate: true
-        path: ${{ github.workspace }}/code-coverage-results.md
+        path: $GITHUB_WORKSPACE/code-coverage-results.md
 
     - name: Upload Test Result Files
       uses: actions/upload-artifact@v4
       if: '!cancelled()'
       with:
         name: test-results-${{ matrix.os }}-${{ matrix.dotnet-tfm }}
-        path: ${{ github.workspace }}/**/TestResults-${{ matrix.dotnet-tfm }}/**/*
+        path: $GITHUB_WORKSPACE/**/TestResults-${{ matrix.dotnet-tfm }}/**/*
         retention-days: 5
 
     - name: Publish Test Results
@@ -198,7 +198,7 @@ jobs:
       # and this particular GitHub action from EnricoMi is a containerized action
       if: matrix.os == 'ubuntu-latest' && (!cancelled())
       with:
-        files: "${{ github.workspace }}/**/*.trx"
+        files: "$GITHUB_WORKSPACE/**/*.trx"
 
     - name: Diagnostics (Linux)
       if: matrix.os == 'ubuntu-latest' && failure()
