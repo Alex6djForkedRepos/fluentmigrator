@@ -242,10 +242,12 @@ public class IndexStorageOptions
 #### Define the Feature Key and Extension Method
 
 Add the new key and extension method to the same `MyDatabaseExtensions` class alongside
-the keys and methods from the first example:
+the keys and methods from the first example. The `partial` keyword from Step 1 lets you
+split the class across multiple files while still sharing the `UnsupportedMethodMessage`
+helper:
 
 ```csharp
-// In MyDatabaseExtensions (partial keyword allows spreading across files)
+// In MyDatabaseExtensions — same partial class declared in Step 1
 public static partial class MyDatabaseExtensions
 {
     public const string IndexStorage = "MyDatabase:IndexStorage";
@@ -255,6 +257,7 @@ public static partial class MyDatabaseExtensions
         string method,
         int fillFactor = 90)
     {
+        // UnsupportedMethodMessage is the private helper defined in the first partial class
         var additionalFeatures = expression as ISupportAdditionalFeatures
             ?? throw new InvalidOperationException(
                 UnsupportedMethodMessage(nameof(WithStorage)));
@@ -271,6 +274,9 @@ public static partial class MyDatabaseExtensions
 #### Read the Model in the Generator
 
 ```csharp
+private static readonly IReadOnlySet<string> _validStorageMethods =
+    new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "default", "columnstore", "heap" };
+
 public override string Generate(CreateIndexExpression expression)
 {
     var sql = base.Generate(expression);
@@ -282,8 +288,13 @@ public override string Generate(CreateIndexExpression expression)
 
     if (storage is not null)
     {
-        // In production code, validate storage.Method before interpolating into SQL
-        // to prevent unexpected values. Here it is kept simple for illustration.
+        if (!_validStorageMethods.Contains(storage.Method))
+        {
+            throw new ArgumentException(
+                $"'{storage.Method}' is not a valid storage method. "
+              + $"Allowed values: {string.Join(", ", _validStorageMethods)}.");
+        }
+
         sql = sql.TrimEnd(';').TrimEnd()
             + $" WITH (STORAGE_METHOD = '{storage.Method}', FILLFACTOR = {storage.FillFactor});";
     }
