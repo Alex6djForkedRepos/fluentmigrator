@@ -89,7 +89,7 @@ This example mirrors how `SqlServerExtensions` adds `AUTHORIZATION owner` to a `
 Store feature key constants in a dedicated class. Use a unique prefix to avoid collisions with other extensions:
 
 ```csharp
-public static class MyDatabaseExtensions
+public static partial class MyDatabaseExtensions
 {
     /// <summary>Key for the schema owner option.</summary>
     public const string SchemaOwner = "MyDatabase:SchemaOwner";
@@ -241,8 +241,12 @@ public class IndexStorageOptions
 
 #### Define the Feature Key and Extension Method
 
+Add the new key and extension method to the same `MyDatabaseExtensions` class alongside
+the keys and methods from the first example:
+
 ```csharp
-public static class MyDatabaseExtensions
+// In MyDatabaseExtensions (partial keyword allows spreading across files)
+public static partial class MyDatabaseExtensions
 {
     public const string IndexStorage = "MyDatabase:IndexStorage";
 
@@ -271,11 +275,15 @@ public override string Generate(CreateIndexExpression expression)
 {
     var sql = base.Generate(expression);
 
+    // GetAdditionalFeature<T> returns null (the default) when the key is not present,
+    // so the null check below safely handles expressions without the feature set.
     var storage = expression.GetAdditionalFeature<IndexStorageOptions>(
         MyDatabaseExtensions.IndexStorage);
 
     if (storage is not null)
     {
+        // In production code, validate storage.Method before interpolating into SQL
+        // to prevent unexpected values. Here it is kept simple for illustration.
         sql = sql.TrimEnd(';').TrimEnd()
             + $" WITH (STORAGE_METHOD = '{storage.Method}', FILLFACTOR = {storage.FillFactor});";
     }
