@@ -35,9 +35,10 @@ You can follow the same pattern for your own database-specific options.
 For this tutorial assume you have a class library project `MyDatabase.Migrations` that references:
 
 ```xml
-<PackageReference Include="FluentMigrator" Version="..." />
-<PackageReference Include="FluentMigrator.Runner.Postgres" Version="..." />
-<PackageReference Include="FluentMigrator.Extensions.Postgres" Version="..." />
+<!-- Use the latest stable versions from NuGet -->
+<PackageReference Include="FluentMigrator" Version="6.*" />
+<PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.*" />
+<PackageReference Include="FluentMigrator.Extensions.Postgres" Version="6.*" />
 ```
 
 You will create three files:
@@ -265,7 +266,7 @@ Register it alongside the standard FluentMigrator setup in your application:
 services.AddFluentMigratorCore()
     .ConfigureRunner(rb => rb
         .AddPostgres()
-        .WithGlobalConnectionString("Host=localhost;Database=myapp;...")
+        .WithGlobalConnectionString("Host=localhost;Port=5432;Database=myapp;Username=myuser;Password=mypassword")
         .ScanIn(typeof(MyFirstMigration).Assembly).For.Migrations())
     .AddMyDatabaseGeneratorExtensions();  // ← register the custom generator
 ```
